@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html>
+     <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+          <link href="https://fonts.googleapis.com/css?family=Orbitron" rel="stylesheet">
+
+          <title id="title">CloudJumper</title>
+          <link rel="icon" href="img\redBall1.png">
+          <link rel="stylesheet" href="cloudjumper-styleSheet.css" type="text/css"></link>
+
+          <script type="text/javascript"
+               src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js">
+          </script>
+     </head>
+
+     <body onload="startGame()">
+          <div id="controlDiv">
+               <div id="controls">
+                    <span>Controls</span>
+               </div>
+               <div id="controlsIcons">
+                    <img class="inputIcon" src="img/keyboardIcon.png" alt="keyboard" onclick="setInput(this);">
+                    <img class="inputIcon" src="img/mouseIcon.png" alt="mouse" onclick="setInput(this);">
+                    <img class="inputIcon" src="img/buttonArrowIcon.png" alt="buttons" onclick="setInput(this);">
+               </div>
+          </div>
+
+          <div id="gameArea">
+               <div id="buttons">
+                    <img class="dirButtons" id="leftButton" src="img/buttonLeftArrow.png" alt="LEFT">
+                    <img class="dirButtons" id="rightButton" src="img/buttonRightArrow.png" alt="RIGHT">
+               </div>
+          </div>
+
+
+
+          <script>
+               var myGamePiece;
+               var myClouds;
+               var myTitle;
+               var myPlay;
+               var myScore, myRecord;
+               var isRecord;
+               var myBackground;
+               var myRetry;
+               var mySound, myMusic, myBounceSound, myRecordSound, myMenuMusic;
+               var acceleration = 3;
+               var cloudSpeed = 5;
+               var started;
+               var beginning;
+               var gameover = new Image();
+               gameover.src = "img/redBall3.png";
+               var isGameOver;
+               var firstPlay = true;
+
+               function startGame() {
+                    myClouds = [];
+                    isRecord = false;
+                    started = false;
+                    beginning = true;
+                    isGameOver = false;
+                    myGamePiece = new component(30, 30, "img/redBall1.png", 120, 385, "image");
+                    myTitle = new component(250, 100, "img/cloudJumperTitle.png", 10, 50, "title", 1);
+                    myPlay = new component(120, 42, "img/play.png", 75, 220, "image");
+                    myScore = new component("15px", "Orbitron", "#000", 150, 30, "text");
+                    myRecord = new component("15px", "Orbitron", "#000", 10, 30, "text");
+                    myBackground = new component(270, 425, "img/bgCloud.png", 0, 0, "background");
+                    mySound = new sound("audio/fail.mp3");
+                    myMusic = new sound("audio/bgMusic.mp3");
+                    myBounceSound = new sound("audio/bounce.mp3");
+                    myRecordSound = new sound("audio/record.mp3");
+                    myMenuMusic = new sound("audio/menuMusic.mp3");
+                    myBounceSound.sound.volume = 0.4;
+
+                    myGameArea.start();
+               }
+
+               var myGameArea = {
+                    canvas : document.createElement("canvas"),
+
+                    start : function() {
+                         this.canvas.width = 270;
+                         this.canvas.height = 420;
+                         this.context = this.canvas.getContext("2d");
+                         $(this.canvas).insertBefore( $('#buttons') );
+
+                         this.frameNo = 0;
+                         this.points = 0;
+                         this.record = (localStorage.getItem("cloudJumperRecord") || 0);
+                         // update the display 50 times per second, which is much like frames in a movie
+                         this.interval = setInterval(updateGameArea, 20);
+
+                         window.addEventListener('keydown', keydownFunction);
+                         window.addEventListener('keyup', keyupFunction);
+
+                         this.canvas.addEventListener('click', jump);
+
+                         if (firstPlay) {
+                              myMenuMusic.sound.setAttribute('loop', '');
+                              myMenuMusic.play();
+                         }
+                    },
+
+                    clear : function() {
+                         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    },
+
+                    stop : function() {
+                         clearInterval(this.interval);
+                    }
+               }
+
+
+               function jump() {
+                    started = true;
+                    myGameArea.canvas.removeEventListener('click', jump);
+                    myMenuMusic.stop();
+
+                    fadeOutInterval = setInterval(fadeOut, 8);
+
+                    myMusic.sound.setAttribute('loop', '');
+                    myMusic.play();
+
+                    if ($('img.inputIcon[alt="mouse"]').attr('data-input') == 'selected') { $(myGameArea.canvas).css('cursor', 'none'); }
+               }
+
+               function fadeOut() {
+                    if (myTitle.opacity > 0) {
+                         myTitle.y -= 1;
+                         myTitle.opacity = parseFloat(myTitle.opacity - 0.01).toFixed(2);
+                    } else {
+                         clearInterval(fadeOutInterval);
+                    }
+               }
+
+               function fadeIn() {
+                    if (myRetry.y < 130) {
+                         myRetry.y += 1;
+                         myRetry.opacity += 0.01;
+                    } else {
+                         clearInterval(fadeInInterval);
+                         myGameArea.canvas.addEventListener('click', reload);
+                    }
+               }
+
+
+               function everyinterval(n) {
+                   if (myGameArea.frameNo != 0 && myGameArea.frameNo % n == 0) { return true; }
+                   return false;
+               }
+
+
+               function component(width, height, color, x, y, type, opacity) {
+                   this.width = width;
+                   this.height = height;
+                   this.speedX = 0;
+                   this.speedY = 0;
+                   this.x = x;
+                   this.y = y;
+                   this.type = type;
+                   this.gravity = 0.1;
+                   this.gravitySpeed = 5;
+                    // 0: no bounce; 1: bounce forever
+                   this.bounce = 1;
+
+                    if (type == "image" || type == "background" || type =="title") {
+                        this.image = new Image();
+                        this.image.src = color;
+                    }
+
+                    if (type == 'text') {
+                         this.color = color;
+                    }
+
+                    if (type == 'title') {
+                         this.opacity = opacity;
+                    }
+
+                    this.update = function() {
+                         ctx = myGameArea.context;
+
+                         if (this.type == "text") {
+                              ctx.font = this.width + " " + this.height;
+                              ctx.fillStyle = this.color;
+                              ctx.fillText(this.text, this.x, this.y);
+                         } else if (type == "image" || type == "background") {
+                              ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+                              if (type == "background") {
+                                   ctx.drawImage(this.image, this.x, this.y - this.height, this.width, this.height);
+                              }
+                         } else if (type == "title") {
+                              ctx.save();
+                              ctx.globalAlpha = this.opacity;
+                              ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+                              ctx.restore();
+                         } else {
+                              ctx.fillStyle = color;
+                              ctx.fillRect(this.x, this.y, this.width, this.height);
+                         }
+                    }
+
+                    this.newPos = function() {
+                         if (this.type == "background") {
+                              this.y += this.speedY;
+                              if (this.y == this.height) {
+                                   this.y = 0;
+                              }
+                              return;
+                         }
+
+                         this.x += this.speedX;
+                         this.gravitySpeed += this.gravity;
+                         this.y += this.speedY + this.gravitySpeed;
+                         this.hitWall();
+                         this.hitBottom();
+                    }
+
+                    this.hitWall = function() {
+                         var rightEdge = myGameArea.canvas.width - this.width;
+
+                         if (this.x < 0) { this.x = 0; }
+                         if (this.x > rightEdge) { this.x = rightEdge; }
+                    }
+
+                    this.hitBottom = function() {
+                         var rockbottom = myGameArea.canvas.height - this.height;
+                         if (this.y > rockbottom) {
+                              this.y = rockbottom;
+
+                              if (!started) {
+                                   this.gravitySpeed = -4;
+                              } else {
+                                   // jump
+                                   if (beginning) {
+                                        this.gravitySpeed = -(this.gravitySpeed * 1.7);
+                                        beginning = false;
+                                   // gameover
+                                   } else {
+                                        isGameOver = true;
+                                        if ($('img.inputIcon[alt="mouse"]').attr('data-input') == 'selected') { $(myGameArea.canvas).css('cursor', 'default'); }
+                                        if (myGamePiece.image) { myGamePiece.image.src = gameover.src; }
+                                        mySound.play();
+                                        myMusic.stop();
+
+                                        var retryOffset = myGameArea.canvas.width / 2 - 69.5;
+                                        myRetry = new component(140, 42, "img/retry.png", retryOffset, -42, "title", 0);
+                                        fadeInInterval = setInterval(fadeIn, 10);
+                                   }
+                              }
+                         }
+                    }
+
+                    this.landOn = function(otherobj) {
+                         var mycenter = this.x + (this.width / 2);
+                         var mybottom = this.y + (this.height);
+
+                         var otherleft = otherobj.x;
+                         var otherright = otherobj.x + (otherobj.width);
+                         var otherbottom = otherobj.y + (otherobj.height / 2);
+
+                         var distance = otherbottom - mybottom;
+
+                         var land = true;
+                         if ((mybottom > otherbottom) || (mycenter < otherleft) || (mycenter > otherright) || (this.gravitySpeed < 0) || (distance > 10)) {
+                              land = false;
+                         }
+                         return land;
+                    }
+               }
+
+
+               function updateGameArea() {
+                    var width, height, gap, pos, minPos, maxPos, minGap, maxGap, number;
+
+                    if (isGameOver) {
+                         myGameArea.clear();
+                         myBackground.update();
+                         for (var i = 0; i < myClouds.length; i++) {
+                           myClouds[i].update();
+                         }
+                         myScore.update();
+                         myRecord.update();
+                         myGamePiece.update();
+                         myRetry.update();
+                         return;
+                    }
+
+
+                    // change sprite
+                    if (myGamePiece.gravitySpeed < 0) {
+                         myGamePiece.image.src = "img/redBall2.png";
+                    } else {
+                         myGamePiece.image.src = "img/redBall1.png";
+                    }
+                    // remove useless clouds
+                    if (myClouds[0] && myClouds[0].y > myGameArea.canvas.height) {
+                         myClouds.splice(0, 1);
+                    }
+
+                    for (var i = 0; i < myClouds.length; i++) {
+                         if (myGamePiece.landOn(myClouds[i])) {
+                              var floor = myClouds[i].y + (myClouds[i].height / 2) - myGamePiece.height;
+                              myGamePiece.y = floor;
+                              myGamePiece.gravitySpeed = -4;
+                              myBounceSound.play();
+
+                              myGameArea.points++;
+
+                              if (myGameArea.points > myGameArea.record && isRecord == false) {
+                                   isRecord = true;
+                                   myRecordSound.play();
+                                   myRecord.color = '#FAFA09';
+                              }
+                         }
+                    }
+
+                    myGameArea.clear();
+                    // update the background before updating other components to make sure the other components are dispalyed on top of the background
+                    if (!beginning) {
+                         myBackground.speedY = +1;
+                         myBackground.newPos();
+                         myBackground.update();
+
+                         if (myTitle.opacity != 0) { myTitle.update(); }
+
+                         myGameArea.frameNo += 1;
+                    } else {
+                         myBackground.update();
+                         myTitle.update();
+
+                         if (!started) { myPlay.update(); }
+                    }
+
+
+                    // generate new clouds
+                    if (myGameArea.frameNo == 1 || everyinterval(45)) {
+                         // the difficulty increases with each bounce
+                         width = Math.max(12, 70 - Math.floor(myGameArea.points / 1));
+                         height = 28.5;
+                         minPos = 10;
+                         maxPos = 200;
+                         pos = Math.floor(Math.random() * (maxPos - minPos + 1) + minPos);
+                         minGap = 30;
+                         maxGap = 50;
+                         gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
+                         number = Math.floor(Math.random() * 4) + 1;
+                         myClouds.push(new component(width, height, "img/cloud" + number + ".png", pos, -height - gap, 'image'));
+                    }
+
+                    if (myGamePiece.gravitySpeed < 0 && !beginning) {
+                         for (var i = 0; i < myClouds.length; i++) {
+                              myClouds[i].y += cloudSpeed;
+                         }
+                    }
+                    for (var i = 0; i < myClouds.length; i++) {
+                         myClouds[i].update();
+                    }
+
+                    if (!beginning) {
+                         myScore.text="SCORE: " + myGameArea.points;
+                         myScore.update();
+                    }
+
+                    if (isRecord) {
+                         myRecord.text = "RECORD: " + myGameArea.points;
+                         localStorage.setItem("cloudJumperRecord", myGameArea.points);
+                    } else {
+                         myRecord.text = "RECORD: " + (localStorage.getItem("cloudJumperRecord") || 0);
+                    }
+                    myRecord.update();
+
+
+
+                    // keyboard
+                    if ($('img.inputIcon[alt="keyboard"]').attr('data-input') == 'selected') {
+                         myGamePiece.speedX = 0;
+                         myGamePiece.speedY = 0;
+                         if (myGameArea.key && myGameArea.key == 37) { myGamePiece.speedX = -acceleration; }
+                         if (myGameArea.key && myGameArea.key == 39) { myGamePiece.speedX = acceleration; }
+                    }
+
+                    myGamePiece.newPos();
+                    myGamePiece.update();
+               }
+
+
+               // object constructor to handle sound objects
+               function sound(src) {
+                    this.sound = document.createElement("audio");
+                    this.sound.src = src;
+                    this.sound.setAttribute("preload", "auto");
+                    this.sound.setAttribute("controls", "none");
+                    this.sound.style.display = "none";
+                    document.body.appendChild(this.sound);
+                    this.play = function() {
+                         this.sound.play();
+                    }
+                    this.stop = function() {
+                         this.sound.pause();
+                    }
+               }
+
+
+               // functions to move using buttons
+               function move(dir) {
+                   if (dir == "left") { myGamePiece.speedX = -acceleration; $('.dirButtons:first-child').css('opacity', '1'); }
+                   if (dir == "right") { myGamePiece.speedX = acceleration; $('.dirButtons:nth-child(2)').css('opacity', '1'); }
+               }
+               function stopMove() {
+                   myGamePiece.speedX = 0;
+                   myGamePiece.speedY = 0;
+                   $('.dirButtons').css('opacity', '0.8');
+               }
+
+
+
+               function reload() {
+                    if (isGameOver) {
+                         myGameArea.stop();
+                         myGameArea.clear();
+                         myGameArea.canvas.removeEventListener('click', reload);
+                         firstPlay = false;
+                         startGame();
+                         jump();
+                    }
+               }
+          </script>
+
+
+
+
+
+          <!-- functions for each input-type -->
+          <script type="text/javascript">
+               // keyboard
+               function keydownFunction(e) {
+                    myGameArea.key = e.keyCode;
+               }
+               function keyupFunction(e) {
+                     myGameArea.key = false;
+               }
+
+
+               // mouse
+               function pointermoveFunction(e) {
+                    if (e.isPrimary) {
+                         if (!started) {
+                              $(myGameArea.canvas).css('cursor', 'default');
+                              myGameArea.x = e.pageX - $('#gameArea').offset().left;
+                         } else if (!isGameOver) {
+                              $(myGameArea.canvas).css('cursor', 'none');
+                              myGameArea.x = e.pageX - $('#gameArea').offset().left;
+                         } else {
+                              $(myGameArea.canvas).css('cursor', 'default');
+                         }
+
+                         if (!isGameOver && $(myGameArea.canvas).is(':hover')) {
+                              myGamePiece.x = myGameArea.x;
+                         }
+                    }
+               }
+
+               // for touchscreen devices which don't support pointermove event
+               function touchmoveFunction(event) {
+                    if (!isGameOver) {
+                         var touch;
+                         if (event.targetTouches.length == 1) {
+                              touch = event.targetTouches[0];
+                              myGamePiece.x = touch.pageX - $('#gameArea').offset().left;
+                         }
+                    }
+               };
+          </script>
+
+
+
+
+          <script type="text/javascript">
+               // change controls' input, if a different input-icon has been clicked
+               function setInput(input) {
+                    if ($(input).attr('data-input') != "selected") {
+                         $('img.inputIcon[data-input="selected"]').attr('data-input', 'unselected').css('opacity', '0.4');
+                         $(input).attr('data-input', 'selected');
+
+                         $('#controlsIcons').find("[data-input='unselected']").slideToggle('slow');
+
+
+                         if ($(input).attr('alt') == 'buttons') {
+                              $('#buttons').show();
+                              $(myGameArea.canvas).css('cursor', 'default');
+
+                              document.getElementById('leftButton').addEventListener('pointerdown', function(event) {
+                                   if (event.isPrimary) {
+                                        move('left');
+                                   }
+                              });
+                              document.getElementById('rightButton').addEventListener('pointerdown', function(event) {
+                                   if (event.isPrimary) {
+                                        move('right');
+                                   }
+                              });
+                              document.getElementById('leftButton').addEventListener('pointerup', stopMove);
+                              document.getElementById('rightButton').addEventListener('pointerup', stopMove);
+
+                              // for touchscreen devices which don't support pointermove event
+                              document.getElementById('leftButton').addEventListener('touchstart', function(event) {
+                                   event.preventDefault();
+                                   move('left');
+                              });
+                              document.getElementById('rightButton').addEventListener('touchstart', function(event) {
+                                   event.preventDefault();
+                                   move('right');
+                              });
+                              document.getElementById('leftButton').addEventListener('touchend', stopMove);
+                              document.getElementById('rightButton').addEventListener('touchend', stopMove);
+                         } else {
+                              $('#buttons').hide();
+                         }
+
+
+                         if ($(input).attr('alt') == 'keyboard') {
+                              window.addEventListener('keydown', keydownFunction);
+                              window.addEventListener('keyup', keyupFunction);
+                              $(myGameArea.canvas).css('cursor', 'default');
+                         } else {
+                              window.removeEventListener("keydown", keydownFunction);
+                              window.removeEventListener("keyup", keyupFunction);
+                         }
+
+
+                         if ($(input).attr('alt') == 'mouse') {
+                              window.addEventListener('pointermove', pointermoveFunction);
+                              // for touchscreen devices which don't support pointermove event
+                              myGameArea.canvas.addEventListener("touchmove", touchmoveFunction);
+                         } else {
+                              window.removeEventListener("pointermove", pointermoveFunction);
+                              // for touchscreen devices which don't support pointermove event
+                              myGameArea.canvas.removeEventListener("touchmove", touchmoveFunction);
+                         }
+                    }
+               }
+
+
+
+               // show/hide input icons
+               $('#controls').mouseenter( function() {
+                    $('#controlsIcons').find("[data-input='unselected']").stop(true, true).slideDown('slow');
+               });
+
+               $('#controlDiv').mouseleave( function() {
+                    $('#controlsIcons').find("[data-input='unselected']").stop(true, true).slideUp('slow');
+               });
+
+
+
+               // input pre-selection
+               $('img.inputIcon').mouseover( function() {
+                    $(this).css('opacity', '1');
+               });
+
+               $('img.inputIcon').mouseout( function() {
+                    if ($(this).attr('data-input') == 'unselected') {
+                         $(this).css('opacity', '0.4');
+                    }
+               });
+
+
+
+               $(document).ready( function() {
+                    $('#controlsIcons').children().attr('data-input', 'unselected').hide();
+                    $('#controlsIcons').children().first().attr('data-input', 'selected').show();
+               });
+
+
+
+               // prevent the context menu
+               window.oncontextmenu = function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    return false;
+               };
+          </script>
+     </body>
+</html>

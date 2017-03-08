@@ -1,0 +1,14 @@
+body {font-family: 'Orbitron', sans-serif;}
+canvas {border: 1px solid #FF0000; background-color: #f1f1f1;}
+#controlDiv {float: left; margin: auto; margin-right: 15px;}
+#controls {border: 3px rgb(82, 82, 82) solid; border-radius: 20px 5px; background-color: rgba(82, 82, 82, 0.2);
+          display: inline-block; padding: 5px; font-size: 15px; margin-bottom: 5px;}
+#controlsIcons {width: 30px; margin-left: 9px; position: relative;}
+.inputIcon {width:100%; border: 3px rgb(82, 82, 82) solid; border-radius: 20px 5px; padding: 15px; background-color: rgba(82, 82, 82, 0.2);}
+img.inputIcon[data-input='selected'] {opacity: 1;}
+img.inputIcon[data-input='unselected'] {opacity: 0.4;}
+#gameArea {display: inline-block; text-align: center;}
+#buttons {display: none;}
+.dirButtons {width: 35px; opacity: 0.8;}
+.dirButtons:first-child {margin-right: 60px;}
+.dirButtons:nth-child(2) {margin-left: 60px;}
