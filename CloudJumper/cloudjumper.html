@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html>
      <head>
+          <meta charset="utf-8"/>
           <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
           <link href="https://fonts.googleapis.com/css?family=Orbitron" rel="stylesheet">
 
           <title id="title">CloudJumper</title>
-          <link rel="icon" href="img\redBall1.png">
-          <link rel="stylesheet" href="cloudjumper-styleSheet.css" type="text/css"></link>
+          <link rel="icon" href="https://comiczen.erpnext.com/files/redBall1.png">
+          <link rel="stylesheet" href="https://comiczen.erpnext.com/files/cloudjumper-styleSheet.css" type="text/css"></link>
 
           <script type="text/javascript"
                src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js">
@@ -19,16 +20,16 @@
                     <span>Controls</span>
                </div>
                <div id="controlsIcons">
-                    <img class="inputIcon" src="img/keyboardIcon.png" alt="keyboard" onclick="setInput(this);">
-                    <img class="inputIcon" src="img/mouseIcon.png" alt="mouse" onclick="setInput(this);">
-                    <img class="inputIcon" src="img/buttonArrowIcon.png" alt="buttons" onclick="setInput(this);">
+                    <img class="inputIcon" src="https://comiczen.erpnext.com/files/keyboardIcon.png" alt="keyboard" onclick="setInput(this);">
+                    <img class="inputIcon" src="https://comiczen.erpnext.com/files/mouseIcon.png" alt="mouse" onclick="setInput(this);">
+                    <img class="inputIcon" src="https://comiczen.erpnext.com/files/buttonArrowIcon.png" alt="buttons" onclick="setInput(this);">
                </div>
           </div>
 
           <div id="gameArea">
                <div id="buttons">
-                    <img class="dirButtons" id="leftButton" src="img/buttonLeftArrow.png" alt="LEFT">
-                    <img class="dirButtons" id="rightButton" src="img/buttonRightArrow.png" alt="RIGHT">
+                    <img class="dirButtons" id="leftButton" src="https://comiczen.erpnext.com/files/buttonLeftArrow.png" alt="LEFT">
+                    <img class="dirButtons" id="rightButton" src="https://comiczen.erpnext.com/files/buttonRightArrow.png" alt="RIGHT">
                </div>
           </div>
 
@@ -48,8 +49,6 @@
                var cloudSpeed = 5;
                var started;
                var beginning;
-               var gameover = new Image();
-               gameover.src = "img/redBall3.png";
                var isGameOver;
                var firstPlay = true;
 
@@ -59,17 +58,17 @@
                     started = false;
                     beginning = true;
                     isGameOver = false;
-                    myGamePiece = new component(30, 30, "img/redBall1.png", 120, 385, "image");
-                    myTitle = new component(250, 100, "img/cloudJumperTitle.png", 10, 50, "title", 1);
-                    myPlay = new component(120, 42, "img/play.png", 75, 220, "image");
+                    myGamePiece = new component(30, 30, "https://comiczen.erpnext.com/files/redBall1.png", 120, 385, "image");
+                    myTitle = new component(250, 100, "https://comiczen.erpnext.com/files/cloudJumperTitle.png", 10, 50, "title", 1);
+                    myPlay = new component(120, 42, "https://comiczen.erpnext.com/files/play.png", 75, 220, "image");
                     myScore = new component("15px", "Orbitron", "#000", 150, 30, "text");
                     myRecord = new component("15px", "Orbitron", "#000", 10, 30, "text");
-                    myBackground = new component(270, 425, "img/bgCloud.png", 0, 0, "background");
-                    mySound = new sound("audio/fail.mp3");
-                    myMusic = new sound("audio/bgMusic.mp3");
-                    myBounceSound = new sound("audio/bounce.mp3");
-                    myRecordSound = new sound("audio/record.mp3");
-                    myMenuMusic = new sound("audio/menuMusic.mp3");
+                    myBackground = new component(270, 425, "https://comiczen.erpnext.com/files/bgCloud.png", 0, 0, "background");
+                    mySound = new sound("https://comiczen.erpnext.com/files/fail.mp3");
+                    myMusic = new sound("https://comiczen.erpnext.com/files/bgMusic.mp3");
+                    myBounceSound = new sound("https://comiczen.erpnext.com/files/bounce.mp3");
+                    myRecordSound = new sound("https://comiczen.erpnext.com/files/record.mp3");
+                    myMenuMusic = new sound("https://comiczen.erpnext.com/files/menuMusic.mp3");
                     myBounceSound.sound.volume = 0.4;
 
                     myGameArea.start();
@@ -140,6 +139,7 @@
                     } else {
                          clearInterval(fadeInInterval);
                          myGameArea.canvas.addEventListener('click', reload);
+                         myGameArea.stop();
                     }
                }
 
@@ -238,12 +238,12 @@
                                    } else {
                                         isGameOver = true;
                                         if ($('img.inputIcon[alt="mouse"]').attr('data-input') == 'selected') { $(myGameArea.canvas).css('cursor', 'default'); }
-                                        if (myGamePiece.image) { myGamePiece.image.src = gameover.src; }
+                                        if (myGamePiece.image) { myGamePiece.image.src = "https://comiczen.erpnext.com/files/redBall3.png" }
                                         mySound.play();
                                         myMusic.stop();
 
-                                        var retryOffset = myGameArea.canvas.width / 2 - 69.5;
-                                        myRetry = new component(140, 42, "img/retry.png", retryOffset, -42, "title", 0);
+                                        var retryOffset = myGameArea.canvas.width / 2 - 70;
+                                        myRetry = new component(140, 42, "https://comiczen.erpnext.com/files/retry.png", retryOffset, -42, "title", 0);
                                         fadeInInterval = setInterval(fadeIn, 10);
                                    }
                               }
@@ -278,19 +278,19 @@
                          for (var i = 0; i < myClouds.length; i++) {
                            myClouds[i].update();
                          }
-                         myScore.update();
-                         myRecord.update();
                          myGamePiece.update();
                          myRetry.update();
+                         myScore.update();
+                         myRecord.update();
                          return;
                     }
 
 
                     // change sprite
                     if (myGamePiece.gravitySpeed < 0) {
-                         myGamePiece.image.src = "img/redBall2.png";
+                         myGamePiece.image.src = "https://comiczen.erpnext.com/files/redBall2.png";
                     } else {
-                         myGamePiece.image.src = "img/redBall1.png";
+                         myGamePiece.image.src = "https://comiczen.erpnext.com/files/redBall1.png";
                     }
                     // remove useless clouds
                     if (myClouds[0] && myClouds[0].y > myGameArea.canvas.height) {
@@ -321,13 +321,9 @@
                          myBackground.newPos();
                          myBackground.update();
 
-                         if (myTitle.opacity != 0) { myTitle.update(); }
-
                          myGameArea.frameNo += 1;
                     } else {
                          myBackground.update();
-                         myTitle.update();
-
                          if (!started) { myPlay.update(); }
                     }
 
@@ -344,7 +340,7 @@
                          maxGap = 50;
                          gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
                          number = Math.floor(Math.random() * 4) + 1;
-                         myClouds.push(new component(width, height, "img/cloud" + number + ".png", pos, -height - gap, 'image'));
+                         myClouds.push(new component(width, height, "https://comiczen.erpnext.com/files/cloud" + number + ".png", pos, -height - gap, 'image'));
                     }
 
                     if (myGamePiece.gravitySpeed < 0 && !beginning) {
@@ -355,6 +351,20 @@
                     for (var i = 0; i < myClouds.length; i++) {
                          myClouds[i].update();
                     }
+
+
+                    // keyboard
+                    if ($('img.inputIcon[alt="keyboard"]').attr('data-input') == 'selected') {
+                         myGamePiece.speedX = 0;
+                         myGamePiece.speedY = 0;
+                         if (myGameArea.key && myGameArea.key == 37) { myGamePiece.speedX = -acceleration; }
+                         if (myGameArea.key && myGameArea.key == 39) { myGamePiece.speedX = acceleration; }
+                    }
+
+                    myGamePiece.newPos();
+                    myGamePiece.update();
+
+                    if (myTitle.opacity > 0) { myTitle.update(); }
 
                     if (!beginning) {
                          myScore.text="SCORE: " + myGameArea.points;
@@ -368,19 +378,6 @@
                          myRecord.text = "RECORD: " + (localStorage.getItem("cloudJumperRecord") || 0);
                     }
                     myRecord.update();
-
-
-
-                    // keyboard
-                    if ($('img.inputIcon[alt="keyboard"]').attr('data-input') == 'selected') {
-                         myGamePiece.speedX = 0;
-                         myGamePiece.speedY = 0;
-                         if (myGameArea.key && myGameArea.key == 37) { myGamePiece.speedX = -acceleration; }
-                         if (myGameArea.key && myGameArea.key == 39) { myGamePiece.speedX = acceleration; }
-                    }
-
-                    myGamePiece.newPos();
-                    myGamePiece.update();
                }
 
 
@@ -416,7 +413,6 @@
 
                function reload() {
                     if (isGameOver) {
-                         myGameArea.stop();
                          myGameArea.clear();
                          myGameArea.canvas.removeEventListener('click', reload);
                          firstPlay = false;
@@ -570,15 +566,6 @@
                     $('#controlsIcons').children().attr('data-input', 'unselected').hide();
                     $('#controlsIcons').children().first().attr('data-input', 'selected').show();
                });
-
-
-
-               // prevent the context menu
-               window.oncontextmenu = function(event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    return false;
-               };
           </script>
      </body>
 </html>
