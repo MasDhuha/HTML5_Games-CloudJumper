@@ -1,7 +1,7 @@
 # CloudJumper
 Bouncing game in which the aim is to rise higher and higher.
 </br></br>
-You can play both on PC and on Smartphone.
+You can play both on PC and on Smartphone (better experience on PC). On Smartphone you need to use a browser and not a HTML viewer.
 </br></br>
 
 ## Commands
