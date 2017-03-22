@@ -14,6 +14,6 @@ img.inputIcon[data-input='selected'] {opacity: 1;}
 img.inputIcon[data-input='unselected'] {opacity: 0.4;}
 #gameArea {display: inline-block; text-align: center;}
 #buttons {display: none;}
-.dirButtons {width: 35px; opacity: 0.8;}
+.dirButtons {width: 70px; opacity: 0.8; margin-top: 10px;}
 .dirButtons:first-child {margin-right: 60px;}
 .dirButtons:nth-child(2) {margin-left: 60px;}
